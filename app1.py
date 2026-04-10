@@ -6,29 +6,28 @@ Run from the project folder:
 import sys
 import os
 
-# Make src/ importable
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE_DIR)
 
-# ── Check that model files exist before starting ───────────────────────────
-MODEL_PATH      = os.path.join(BASE_DIR, "model.pkl")
+# Model file paths
+MODEL_PATH = os.path.join(BASE_DIR, "model.pkl")
 VECTORIZER_PATH = os.path.join(BASE_DIR, "vectorizer.pkl")
 
 if not os.path.isfile(MODEL_PATH) or not os.path.isfile(VECTORIZER_PATH):
-    print("\n" + "="*60)
-    print("  ❌  MODEL FILES NOT FOUND")
-    print("="*60)
-    print("\n  You need to train the model first.")
-    print("  Run this command:\n")
-    print("      python train_model.py\n")
-    print("  Make sure combined_data.csv is in the same folder.")
-    print("="*60 + "\n")
+    print("\n" + "=" * 60)
+    print("  ❌ MODEL FILES NOT FOUND")
+    print("=" * 60)
+    print(f"Expected model at: {MODEL_PATH}")
+    print(f"Expected vectorizer at: {VECTORIZER_PATH}")
+    print("\nMake sure these files exist in the project root:")
+    print("  - model.pkl")
+    print("  - vectorizer.pkl")
+    print("=" * 60 + "\n")
     sys.exit(1)
 
 from src.app import app
 
 if __name__ == "__main__":
-    print("\n✅ Model loaded successfully.")
-    print("🌐 Starting ShieldScan AI at http://127.0.0.1:5500\n")
-    app.run(host="127.0.0.1", port=5500, debug=True)
+    print("\n✅ Model files found.")
+    port = int(os.environ.get("PORT", 5500))
+    app.run(host="0.0.0.0", port=port, debug=False)
