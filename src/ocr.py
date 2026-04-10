@@ -8,20 +8,32 @@ try:
     import pytesseract
     from PIL import Image, ImageEnhance, ImageFilter
 
+    tesseract_candidates = [shutil.which("tesseract")]
+
     if os.name == "nt":
-        for candidate in (
-            shutil.which("tesseract"),
+        tesseract_candidates.extend([
             r"C:\Program Files\Tesseract-OCR\tesseract.exe",
             r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
             os.path.expandvars(r"%LOCALAPPDATA%\Programs\Tesseract-OCR\tesseract.exe"),
-        ):
-            if candidate and os.path.exists(candidate):
-                pytesseract.pytesseract.tesseract_cmd = candidate
-                break
+        ])
+    else:
+        tesseract_candidates.extend([
+            "/usr/bin/tesseract",
+            "/usr/local/bin/tesseract",
+        ])
 
-    OCR_AVAILABLE = True
+    TESSERACT_CMD = next(
+        (candidate for candidate in tesseract_candidates if candidate and os.path.exists(candidate)),
+        None,
+    )
+
+    if TESSERACT_CMD:
+        pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
+
+    OCR_AVAILABLE = bool(TESSERACT_CMD)
 except ImportError:
     OCR_AVAILABLE = False
+    TESSERACT_CMD = None
 
 
 def extract_text_from_image(file_storage) -> str:
@@ -31,8 +43,8 @@ def extract_text_from_image(file_storage) -> str:
     """
     if not OCR_AVAILABLE:
         raise RuntimeError(
-            "OCR not available. Install: pip install pytesseract pillow "
-            "and tesseract-ocr system package."
+            "OCR is not available on this deployment because the Tesseract "
+            "system package is missing."
         )
 
     try:
